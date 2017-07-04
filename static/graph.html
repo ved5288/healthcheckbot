@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html>
+<head>
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+
+    <div id="BP" style="width: 100%; height: 100%;"><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div id="Pulse" style="width: 100%; height: 200%;"><!-- Plotly chart will be drawn inside this DIV --></div>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+
+    <script>
+        var QueryString = function (next) {
+
+            // This function is anonymous, is executed immediately and
+            // the return value is assigned to QueryString!
+            var query_string = {};
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split("=");
+                // If first entry with this name
+                if (typeof query_string[pair[0]] === "undefined") {
+                    query_string[pair[0]] = decodeURIComponent(pair[1]);
+                    // If second entry with this name
+                } else if (typeof query_string[pair[0]] === "string") {
+                    var arr = [query_string[pair[0]], decodeURIComponent(pair[1])];
+                    query_string[pair[0]] = arr;
+                    // If third or later entry with this name
+                } else {
+                    query_string[pair[0]].push(decodeURIComponent(pair[1]));
+                }
+            }
+
+            next(query_string.userId)
+        }(getData);
+
+        var httpRequest;
+
+        function getData(userid) {
+            httpRequest = new XMLHttpRequest();
+            var url = 'https://'+ window.location.host + '/api/graphData?userid=' + userid;
+            console.log(url);
+            if (!httpRequest) {
+                alert('Giving up :( Cannot create an XMLHTTP instance');
+                return false;
+            }
+            httpRequest.onreadystatechange = processResponse;
+            httpRequest.open('GET', url);
+            httpRequest.send();
+        }
+
+        function processResponse() {
+            if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                if (httpRequest.status === 200) {
+                    var response = JSON.parse(httpRequest.responseText);
+                    if (!response.validuser) {
+                        alert("No such user");
+                        return;
+                    } else {
+                        processdata(response.measures);
+                    }
+                } else {
+                    console.log(httpRequest.status);
+                    //alert('There was a problem with the request.');
+                }
+            }
+        }             
+
+        function processdata(datafromURL) {
+
+            var dataset = datafromURL;
+
+            var data1 = new Array();
+
+            for (var i = 0; i < dataset.length; i++) {
+                var yparams = new Array();
+                yparams.push(dataset[i].measures.sys);
+                yparams.push(dataset[i].measures.dia);
+
+                var xparams = new Array();
+                xparams.push(i+1);
+                xparams.push(i+1);
+
+                var trace = {
+                    x: xparams,
+                    y: yparams,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    marker: {
+                        color: findcolour(dataset[i].measures.sys, dataset[i].measures.dia),
+                        size: 8
+                    },
+                    line: {
+                        color: findcolour(dataset[i].measures.sys, dataset[i].measures.dia),
+                        width: 3
+                    }
+                }
+
+                data1.push(trace);
+            }
+
+            var layout1 = {
+                showlegend: false,
+                title: '<b> Blood Pressure </b>',
+                titlefont: {
+                    family: 'Open Sans',
+                    size: 24,
+                    color: 'rgb(162,47,47)'
+                },
+                yaxis: {
+                    title: 'Pressure (mm Hg)',
+                    titlefont: {
+                        family: '\"Open Sans\", verdana, arial, sans-serif',
+                        size: 19,
+                    }
+                }
+            };
+
+            var data2 = new Array();
+
+
+            var Pulse_yparams = new Array();
+            var Pulse_xparams = new Array();
+
+            for (var i = 0; i < dataset.length; i++) {
+                Pulse_yparams.push(dataset[i].measures.pulse);
+                Pulse_xparams.push(i + 1);
+            }
+
+            var trace = {
+                x: Pulse_xparams,
+                y: Pulse_yparams,
+                type: 'scatter',
+                mode: 'lines+markers',
+                marker: {
+                    color: 'rgb(255,140,0)',
+                    size: 8
+                },
+                line: {
+                    color: 'rgb(0, 128, 0)',
+                    width: 3
+                }
+            }                
+
+            data2.push(trace);
+
+            var layout2 = {
+                showlegend: false,
+                title: '<b> Heart Pulse </b>',
+                titlefont: {
+                    family: 'Open Sans',
+                    size: 24,
+                    color: 'rgb(162,47,47)'
+                },
+                yaxis: {
+                    title: 'Heart Pulse (beats/min)',
+                    titlefont: {
+                        family: '\"Open Sans\", verdana, arial, sans-serif',
+                        size: 19,
+                    }
+                },
+                xaxis: {
+                    title: 'Measurements',
+                    titlefont: {
+                        family: '\"Open Sans\", verdana, arial, sans-serif',
+                        size: 19,
+                    }
+            }
+            };
+
+            Plotly.newPlot('BP', data1, layout1);
+            Plotly.newPlot('Pulse', data2, layout2);
+        }
+
+        
+        function findcolour(sys, dia) {
+            var encodedsysbp = Math.floor((sys - 60) / 20);
+            var encodeddiabp = Math.floor((dia - 50) / 10);
+
+            encodeddiabp = (encodeddiabp < 1) ? 0 : encodeddiabp;
+            encodedsysbp = (encodedsysbp < 1) ? 0 : encodedsysbp;
+
+            encodeddiabp = (encodeddiabp > 5) ? 6 : encodeddiabp;
+            encodedsysbp = (encodedsysbp > 5) ? 6 : encodedsysbp;
+
+            if ((encodeddiabp == 1 || encodeddiabp == 2) && (encodedsysbp == 1 || encodedsysbp == 2)) {
+                // Report Normal BP -- Green Color
+                return 'rgb(0,128,0)'
+            } else if (encodeddiabp == 0 || encodedsysbp == 0) {
+                // Report Low Blood Pressure (Hypotension) -- Pale Green
+                return 'rgb(152,251,152)';
+            } else {
+                var temp = (encodedsysbp > encodeddiabp) ? encodedsysbp : encodeddiabp;
+                //console.log("temp is ", temp);
+                switch (temp) {
+                    case 3:
+                        // Report Prehypertension -- Yellow
+                        return 'rgb(255,180,0)';
+                        break;
+                    case 4:
+                        // Report High Blood Pressure (Hypertension Stage 1) -- DarkOrange
+                        return 'rgb(255,140,0)';
+                        break;
+                    case 5:
+                        // Report High Blood Pressure (Hypertension Stage 2) -- OrangeRed
+                        return 'rgb(255,69,0)';
+                        break;
+                    case 6:
+                        // Report High Blood Pressure Crisis (Emergency Care) -- Red
+                        return 'rgb(128,0,0)'
+                        break;
+                    default:
+                        // Report Error -- Blue
+                        return 'rgb(0,0,128)'
+                        break;
+                }
+            }
+        }
+    </script>
+</body>
