@@ -2,7 +2,7 @@ var https = require('https');
 var fs = require('fs');
 var utils = require('./newUtils.js')
 
-var URL_START = 'http://73fa5f5e.ngrok.io';
+var URL_START = 'https://healthcheckbot.azurewebsites.net';
 var CALLBACK_URL = URL_START + '/oauth/callback';
 
 /*

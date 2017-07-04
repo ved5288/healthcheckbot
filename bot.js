@@ -1,7 +1,7 @@
 var builder = require('botbuilder');
 var utils = require('./newUtils');
 
-var urlBase = 'https://73fa5f5e.ngrok.io';
+var urlBase = 'https://healthcheckbot.azurewebsites.net';
 
 // Create chat bot and listen to messages
 var connector = new builder.ChatConnector({
