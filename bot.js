@@ -91,9 +91,10 @@ bot.dialog('/showData', function (session) {
                     break;
                 case 2:
                 case 3:
+                case 4:
                     session.beginDialog('/highBP');
                     break;
-                case 4:
+                case 5:
                     sendMessage(session.message, bot, "Your blood is **very high** (Hypertension Stage 3). Seek **emergency care** without any delay !");
                     break;
                 default:

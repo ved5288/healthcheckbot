@@ -368,8 +368,9 @@ function makeSuggestionMessage(conversationData, next) {
     var doesDrink = conversationData.doesDrink;
 
     var message = "Your blood pressure is ";
-
     if (bpState == 2) {
+        message += "**higher than normal**. \n\n";
+    } else if (bpState == 3) {
         message += "**high** (Hypertension Stage 1).\n\n";
     } else {
         message += "**very high** (Hypertension Stage 2).\n\n";
@@ -519,7 +520,7 @@ function getBPState(bp) {
     if ((encodeddiabp == 1 || encodeddiabp == 2) && (encodedsysbp == 1 || encodedsysbp == 2)) {
         bptype = 1;
     } else if (encodeddiabp == 0 || encodedsysbp == 0) {
-        bptype = 2;
+        bptype = 0;
     } else {
         var temp = (encodedsysbp > encodeddiabp) ? encodedsysbp : encodeddiabp;
         bptype = temp -1;
