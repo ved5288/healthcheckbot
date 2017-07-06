@@ -76,7 +76,7 @@ bot.dialog('/showData', function (session) {
     utils.fetchLastReading(session.userData.userId, function (result) {
         if (result.status) {
             session.conversationData = { sys: result.data.measures.sys, dia: result.data.measures.dia, date: result.data.date };
-            var bpState = 3;//utils.getBPState({ sys: result.data.measures.sys, dia: result.data.measures.dia });
+            var bpState = utils.getBPState({ sys: result.data.measures.sys, dia: result.data.measures.dia });
             session.conversationData["bpState"] = bpState;
             sendMessage(session.message, bot, "Your last BP measured to be " + result.data.measures.sys + "/" + result.data.measures.dia + " and was taken on " + (new Date(result.data.date * 1000)).toDateString());
             var url = urlBase + '/static/graph.html?userId=' + session.userData.userId;
